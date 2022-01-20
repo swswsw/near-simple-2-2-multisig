@@ -5,6 +5,9 @@ Deposit and withdraw.
 
 Withdraw requires approval from both owners.
 
-may be generalized to m-of-n multisig later.
+May be generalized to m-of-n multisig later.
 
 
+
+### status
+Deposit works.  Working on withdraw.
