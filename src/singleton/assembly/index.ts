@@ -28,6 +28,7 @@ export class Contract {
   // deposit token into the contract
   @mutateState()
   deposit(): void {
+    // todo: get fund amount from storage and add to it.
     this.fund += Context.attachedDeposit;
     //this.sender = Context.sender; 
     storage.set(fundKey, this.fund);
@@ -90,7 +91,7 @@ export class Contract {
     const to_owner = ContractPromiseBatch.create(this.owner)
 
     // transfer earnings to owner then confirm transfer complete
-    const promise = to_owner.transfer(this.contributions.received)
+    const promise = to_owner.transfer(amount)
     promise.then(to_self).function_call("on_transfer_complete", '{}', u128.Zero, XCC_GAS)
   }
 
@@ -99,17 +100,6 @@ export class Contract {
     const caller = Context.predecessor
     assert(this.key1 == caller || this.key2 == caller, "Only the owner of this contract may call this method")
   }
-
-
-
-  // // read the given key from account (contract) storage
-  // read(key: string): string {
-  //   if (isKeyInStorage(key)) {
-  //     return `✅ Key [ ${key} ] has value [ ${storage.getString(key)!} ] and "this.message" is [ ${this.message} ]`
-  //   } else {
-  //     return `🚫 Key [ ${key} ] not found in storage. ( ${this.storageReport()} )`
-  //   }
-  // }
 
   /**
   write the given value at the given key to account (contract) storage
