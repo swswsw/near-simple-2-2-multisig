@@ -3,7 +3,7 @@ import { assert_self, assert_single_promise_success, XCC_GAS, AccountId  } from 
 
 
 const storageKey:string = 'approvalStorage';
-const fundKey:string = 'fund';
+const fundKey:string = 'fundStorage';
 
 @nearBindgen
 export class Contract {
@@ -29,7 +29,13 @@ export class Contract {
   @mutateState()
   deposit(): void {
     // todo: get fund amount from storage and add to it.
-    this.fund = Context.attachedDeposit;
+    let fundValue:u128 | null = storage.get<u128>(fundKey);
+    if (fundValue !== null) {
+      this.fund = u128.add(fundValue, Context.attachedDeposit);
+    } else {
+      this.fund = Context.attachedDeposit;
+    }
+    
     //this.sender = Context.sender; 
     storage.set(fundKey, this.fund);
   }
