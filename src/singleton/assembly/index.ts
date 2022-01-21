@@ -29,7 +29,7 @@ export class Contract {
   @mutateState()
   deposit(): void {
     // todo: get fund amount from storage and add to it.
-    this.fund += Context.attachedDeposit;
+    this.fund = Context.attachedDeposit;
     //this.sender = Context.sender; 
     storage.set(fundKey, this.fund);
   }
