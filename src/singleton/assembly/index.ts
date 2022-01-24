@@ -41,7 +41,7 @@ export class Contract {
   }
 
   @mutateState()
-  withdraw(recipient:string, withdrawAmount:u128): void {
+  withdraw(recipient:string, withdrawAmount:string): void {
     // check if this comes from one of the approved address first.
     // get the data from storage, 
     // if data does not exist yet.  save the approval
@@ -49,6 +49,8 @@ export class Contract {
     // if this approval is different from current one (different recipient or amount, overwrite the old one.  only one approval is stored)
     // record which address approved this.  store in storage
     // if both address approved this.  then send the fund to recipient.
+
+    let uWithdrawAmount = u128.from(withdrawAmount);
 
     let sender = Context.sender; // sender is i32
     if (sender != this.key1 && sender != this.key2) {
@@ -65,18 +67,18 @@ export class Contract {
         let addr = splited[0];
         let sAmount = splited[1];
         let amount = u128.from(sAmount);
-        if (addr != sender && (addr == this.key1 || addr == this.key2) && amount == withdrawAmount) {
+        if (addr != sender && (addr == this.key1 || addr == this.key2) && amount == uWithdrawAmount) {
           // another person has adlready approved it
           // make the transfer
 
         } else {
           // first person to approve this.  
-          let str2 = sender + '-' + withdrawAmount.toString();
+          let str2 = sender + '-' + uWithdrawAmount.toString();
           storage.setString(storageKey, str2);
         }
       } else {
         // first person to approve this.  
-        let str2 = sender + '-' + withdrawAmount.toString();
+        let str2 = sender + '-' + uWithdrawAmount.toString();
         storage.setString(storageKey, str2);
       }
       
