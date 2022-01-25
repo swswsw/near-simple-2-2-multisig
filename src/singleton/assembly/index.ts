@@ -4,6 +4,7 @@ import { assert_self, assert_single_promise_success, XCC_GAS, AccountId  } from 
 
 const storageKey:string = 'approvalStorage';
 const fundKey:string = 'fundStorage';
+const delimiter = '-';
 
 @nearBindgen
 export class Contract {
@@ -31,6 +32,7 @@ export class Contract {
     // todo: get fund amount from storage and add to it.
     let fundValue:u128 | null = storage.get<u128>(fundKey);
     if (fundValue !== null) {
+      logging.log("fund before deposit: " + fundValue.toString());
       this.fund = u128.add(fundValue, Context.attachedDeposit);
     } else {
       this.fund = Context.attachedDeposit;
@@ -50,6 +52,8 @@ export class Contract {
     // record which address approved this.  store in storage
     // if both address approved this.  then send the fund to recipient.
 
+    logging.log("withdraw " + withdrawAmount + " to " + recipient);
+
     let uWithdrawAmount = u128.from(withdrawAmount);
 
     let sender = Context.sender; // sender is i32
@@ -60,35 +64,48 @@ export class Contract {
     if (isKeyInStorage(storageKey)) {
       // changing type, otherwise, will get compile error: 
       // ERROR TS2322: Type '~lib/string/String | null' is not assignable to type '~lib/string/String'.
-      let storageValue:string | null = storage.getString(storageKey); // str should be something like <addr>-<amount>
+      let storageValue:string | null = storage.getString(storageKey); // storageValue should be something like <approver>-<recipient>-<amount>
+
       if (storageValue !== null) {
-        let sStorageValue = storageValue.toString();
-        let splited = sStorageValue.split('-');
-        let addr = splited[0];
-        let sAmount = splited[1];
-        let amount = u128.from(sAmount);
-        if (addr != sender && (addr == this.key1 || addr == this.key2) && amount == uWithdrawAmount) {
-          // another person has adlready approved it
+        logging.log("pending approval=" + storageValue);
+
+        let splitted = storageValue.split(delimiter);
+        let oldApprover = splitted[0];
+        let oldRecipient = splitted[1];
+        let sOldAmount = splitted[2];
+        let oldAmount = u128.from(sOldAmount);
+        if (oldApprover != sender && (oldApprover == this.key1 || oldApprover == this.key2) 
+          && oldRecipient == recipient 
+          && oldAmount == uWithdrawAmount) {
+          // another person has already approved it
           // make the transfer
+          this.transfer(recipient, uWithdrawAmount);
 
         } else {
-          // first person to approve this.  
-          let str2 = sender + '-' + uWithdrawAmount.toString();
+          // first person to approve this.
+          logging.log("overwrite the earlier approval with this new approval");
+          let str2 = Contract.buildApprovalValue(sender, recipient, uWithdrawAmount);
           storage.setString(storageKey, str2);
         }
       } else {
         // first person to approve this.  
-        let str2 = sender + '-' + uWithdrawAmount.toString();
+        let str2 = Contract.buildApprovalValue(sender, recipient, uWithdrawAmount);
         storage.setString(storageKey, str2);
       }
       
+    } else {
+      // first person to approve this.  
+      logging.log("first person to approve this.");
+      let str2 = Contract.buildApprovalValue(sender, recipient, uWithdrawAmount);
+      storage.setString(storageKey, str2);
     }
   }
 
-
-  // private transfer(addr:string, amount:u128): void {
-  //   // todo: 
-  // }
+  private static buildApprovalValue(approver:string, recipient:string, amount:u128): string {
+    let str = approver + delimiter + recipient + delimiter + amount.toString();
+    logging.log("approval str=" + str);
+    return str;
+  }
 
   private transfer(addr:string, amount:u128): void {
     this.assert_owner()
@@ -96,11 +113,12 @@ export class Contract {
     //assert(this.contributions.received > u128.Zero, "No received (pending) funds to be transferred")
 
     const to_self = Context.contractName
-    const to_owner = ContractPromiseBatch.create(this.owner)
+    const to_recipient = ContractPromiseBatch.create(addr)
 
     // transfer earnings to owner then confirm transfer complete
-    const promise = to_owner.transfer(amount)
+    const promise = to_recipient.transfer(amount)
     promise.then(to_self).function_call("on_transfer_complete", '{}', u128.Zero, XCC_GAS)
+    logging.log("transfer complete");
   }
 
   // 2 owners
