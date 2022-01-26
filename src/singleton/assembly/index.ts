@@ -117,8 +117,17 @@ export class Contract {
 
     // transfer earnings to owner then confirm transfer complete
     const promise = to_recipient.transfer(amount)
-    promise.then(to_self).function_call("on_transfer_complete", '{}', u128.Zero, XCC_GAS)
-    logging.log("transfer complete");
+    promise.then(to_self).function_call("on_transfer_complete", '{"amount":amount}', u128.Zero, XCC_GAS)
+  }
+
+  @mutateState()
+  on_transfer_complete(): void {
+    assert_self()
+    assert_single_promise_success()
+
+    logging.log("transfer complete")
+    // todo: track fund change
+    
   }
 
   // 2 owners
