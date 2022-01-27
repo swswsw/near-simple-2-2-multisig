@@ -11,15 +11,12 @@ export class Contract {
 
   // hmm... class member cannot be const
   // private static const storageKey:string = 'approvalStorage';
-  //private storageKey:string = 'approvalStorage';
 
   private key1:string;
   private key2:string;
   private fund:u128;
 
 
-
-  // todo: constructor that takes 2 addresses 
   // constructor
   constructor(key1:string, key2:string) {
     this.key1 = key1;
@@ -29,7 +26,7 @@ export class Contract {
   // deposit token into the contract
   @mutateState()
   deposit(): void {
-    // todo: get fund amount from storage and add to it.
+
     let fundValue:u128 | null = storage.get<u128>(fundKey);
     if (fundValue !== null) {
       logging.log("fund before deposit: " + fundValue.toString());
@@ -62,9 +59,11 @@ export class Contract {
     }
 
     if (isKeyInStorage(storageKey)) {
-      // changing type, otherwise, will get compile error: 
+      // type can't be string, it will get compile error: 
       // ERROR TS2322: Type '~lib/string/String | null' is not assignable to type '~lib/string/String'.
-      let storageValue:string | null = storage.getString(storageKey); // storageValue should be something like <approver>-<recipient>-<amount>
+      // storageValue should be something like <approver>-<recipient>-<amount>.  eg. gameofstake.testnet-solomonwu.testnet-1000000000000
+      let storageValue:string | null = storage.getString(storageKey); 
+      // this probably is better done as a structured data.
 
       if (storageValue !== null) {
         logging.log("pending approval=" + storageValue);
