@@ -1,0 +1,57 @@
+<html>
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <script src="https://code.jquery.com/jquery-3.6.0.js" integrity="sha256-H+K7U5CnXl1h5ywQfKtSj8PCmoN9aaq30gDh27Xc0jk=" crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/near-api-js@0.41.0/dist/near-api-js.min.js"></script>
+  <link rel="stylesheet" href="styles.css">
+</head>
+
+<body>
+
+</body>
+
+<script>
+
+// reference for near-api-js flow: https://docs.near.org/docs/api/naj-quick-reference
+
+let contractName ='dev-1643363054216-73116405445411';
+
+async function initNear() {
+    const config = {
+    networkId: "testnet",
+    keyStore: new keyStores.BrowserLocalStorageKeyStore(),
+    nodeUrl: "https://rpc.testnet.near.org",
+    walletUrl: "https://wallet.testnet.near.org",
+    helperUrl: "https://helper.testnet.near.org",
+    explorerUrl: "https://explorer.testnet.near.org",
+    };
+
+    // connect to NEAR
+    const near = await connect(config);
+
+    // create wallet connection
+    const wallet = new WalletConnection(near);
+}
+
+// redirects user to wallet to authorize your dApp
+// this creates an access key that will be stored in the browser's local storage
+// access key can then be used to connect to NEAR and sign transactions via keyStore
+
+const signIn = () => {
+  wallet.requestSignIn(
+    contractName, // contract requesting access
+    "2-of-2 Multisig", // optional
+    //"http://YOUR-URL.com/success", // optional
+    //"http://YOUR-URL.com/failure" // optional
+  );
+};
+
+const signOut = () => {
+  wallet.signOut();
+};
+
+</script>
+
+</html>
