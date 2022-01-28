@@ -10,8 +10,16 @@
 
 <body>
 
+    <img src="wallet.png" />
+    <
     <button id="sign-in" class="signed-out" style="display: none">
         Sign in with NEAR!
+    </button>
+    <button id="deposit" class="signed-in" style="display: none">
+        Deposit
+    </button>
+    <button id="withdraw" class="signed-in" style="display: none">
+        Withdraw
     </button>
 
       <footer>
@@ -142,6 +150,17 @@ function signedInFlow() {
     // Displaying current account name.
     document.getElementById('account-id').innerText = window.accountId;
 
+    document.getElementById('deposit').addEventListener('click', () => {
+        console.log("about to deposit");
+        window.contract.deposit(); // also should take callback to update fund amount.
+    });
+
+    document.getElementById('withdraw').addEventListener('click', () => {
+        console.log(window.accountId + " approves to withdraw to gameofstake.testnet .");
+        window.contract.withdraw({recipient: "gameofstake.testnet", withdrawAmount: "100000000000"}); // also should take callback to update fund amount.
+    });
+
+
     // Adding an event to a sing-out button.
     document.getElementById('sign-out').addEventListener('click', e => {
         e.preventDefault();
@@ -154,10 +173,13 @@ function signedInFlow() {
 
 
 
+
 // Loads nearAPI and this contract into window scope.
 window.nearInitPromise = initContract()
   .then(doWork)
   .catch(console.error);
 </script>
 
+
+<!-- wallet image by <a href="https://www.flaticon.com/free-icons/wallet" title="wallet icons">Wallet icons created by Gajah Mada - Flaticon</a> -->
 </html>
