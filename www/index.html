@@ -10,7 +10,16 @@
 
 <body>
 
-<button id="sign-in">Sign-in</button>
+    <button id="sign-in" class="signed-out" style="display: none">
+        Sign in with NEAR!
+    </button>
+
+      <footer>
+        <p class="signed-in" style="display: none">
+          Signed in as <a id="account-id" href="https://wallet.testnet.near.org/profile" target="_blank"></a>
+          • <a href="#signout" id="sign-out">sign out</a>
+        </p>
+      </footer>
 </body>
 
 <script>
@@ -110,13 +119,15 @@ async function doWork() {
 }
 
 function signedOutFlow() {
+  // Displaying the signed out flow container.
+  Array.from(document.querySelectorAll('.signed-out')).forEach(el => el.style.display = '');
   // Adding an event to a sing-in button.
   document.getElementById('sign-in').addEventListener('click', () => {
     window.walletAccount.requestSignIn(
       // The contract name that would be authorized to be called by the user's account.
       contractName,
       // This is the app name. It can be anything.
-      '2-of-2 Multisig Wallet',
+      'Who was the last person to say "Hi!"?',
       // We can also provide URLs to redirect on success and failure.
       // The current URL is used by default.
     );
@@ -125,6 +136,19 @@ function signedOutFlow() {
 
 // Main function for the signed-in flow (already authorized by the wallet).
 function signedInFlow() {
+    // Displaying the signed in flow container.
+    Array.from(document.querySelectorAll('.signed-in')).forEach(el => el.style.display = '');
+
+    // Displaying current account name.
+    document.getElementById('account-id').innerText = window.accountId;
+
+    // Adding an event to a sing-out button.
+    document.getElementById('sign-out').addEventListener('click', e => {
+        e.preventDefault();
+        window.walletAccount.signOut();
+        // Forcing redirect.
+        window.location.replace(window.location.origin + window.location.pathname);
+    });
 
 }
 
