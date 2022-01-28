@@ -10,22 +10,28 @@
 
 <body>
 
+<button id="sign-in">Sign-in</button>
 </body>
 
 <script>
 
 // reference for near-api-js flow: https://docs.near.org/docs/api/naj-quick-reference
+// difference from the above doc: import near-api-js in the script will give me nearApi object.  we will need to reference that.  
+const { connect, keyStores, WalletConnection } = nearApi;
 
-let contractName ='dev-1643363054216-73116405445411';
+// also, taking example from https://github.com/near-examples/wallet-example/blob/master/src/main.js
 
+const contractName ='dev-1643363054216-73116405445411';
+
+// this is replaced by initContract()
 async function initNear() {
     const config = {
-    networkId: "testnet",
-    keyStore: new keyStores.BrowserLocalStorageKeyStore(),
-    nodeUrl: "https://rpc.testnet.near.org",
-    walletUrl: "https://wallet.testnet.near.org",
-    helperUrl: "https://helper.testnet.near.org",
-    explorerUrl: "https://explorer.testnet.near.org",
+        networkId: "testnet",
+        keyStore: new nearApi.keyStores.BrowserLocalStorageKeyStore(), 
+        nodeUrl: "https://rpc.testnet.near.org",
+        walletUrl: "https://wallet.testnet.near.org",
+        helperUrl: "https://helper.testnet.near.org",
+        explorerUrl: "https://explorer.testnet.near.org",
     };
 
     // connect to NEAR
@@ -33,7 +39,47 @@ async function initNear() {
 
     // create wallet connection
     const wallet = new WalletConnection(near);
+    
+    const walletAccountId = wallet.getAccountId();
+    console.log("accountid=", walletAccountId); // if not login, it is empty.
 }
+
+// Initializing contract
+async function initContract() {
+  // this is taken from https://github.com/near-examples/wallet-example/blob/master/src/main.js. 
+  // this way of adding object to window object is probably not preferrable. 
+
+  const config = {
+        networkId: "testnet",
+        keyStore: new nearApi.keyStores.BrowserLocalStorageKeyStore(), 
+        nodeUrl: "https://rpc.testnet.near.org",
+        walletUrl: "https://wallet.testnet.near.org",
+        helperUrl: "https://helper.testnet.near.org",
+        explorerUrl: "https://explorer.testnet.near.org",
+    };
+
+  // Initializing connection to the NEAR node.
+  window.near = await connect(config);
+
+  window.wallet = new WalletConnection(near);
+  // Initializing Wallet based Account. It can work with NEAR TestNet wallet that
+  // is hosted at https://wallet.testnet.near.org
+  window.walletAccount = new nearApi.WalletAccount(window.near);
+
+  // Getting the Account ID. If unauthorized yet, it's just empty string.
+  window.accountId = window.walletAccount.getAccountId();
+
+  // Initializing our contract APIs by contract name and configuration.
+  window.contract = await window.near.loadContract(contractName, {
+    // View methods are read only. They don't modify the state, but usually return some value.
+    viewMethods: [],
+    // Change methods can modify the state. But you don't receive the returned value when called.
+    changeMethods: ['deposit','withdraw'],
+    // Sender is the account ID to initialize transactions.
+    sender: window.accountId,
+  });
+}
+
 
 // redirects user to wallet to authorize your dApp
 // this creates an access key that will be stored in the browser's local storage
@@ -52,6 +98,42 @@ const signOut = () => {
   wallet.signOut();
 };
 
+
+// Using initialized contract
+async function doWork() {
+  // Based on whether you've authorized, checking which flow we should go.
+  if (!window.walletAccount.isSignedIn()) {
+    signedOutFlow();
+  } else {
+    signedInFlow();
+  }
+}
+
+function signedOutFlow() {
+  // Adding an event to a sing-in button.
+  document.getElementById('sign-in').addEventListener('click', () => {
+    window.walletAccount.requestSignIn(
+      // The contract name that would be authorized to be called by the user's account.
+      contractName,
+      // This is the app name. It can be anything.
+      '2-of-2 Multisig Wallet',
+      // We can also provide URLs to redirect on success and failure.
+      // The current URL is used by default.
+    );
+  });
+}
+
+// Main function for the signed-in flow (already authorized by the wallet).
+function signedInFlow() {
+
+}
+
+
+
+// Loads nearAPI and this contract into window scope.
+window.nearInitPromise = initContract()
+  .then(doWork)
+  .catch(console.error);
 </script>
 
 </html>
