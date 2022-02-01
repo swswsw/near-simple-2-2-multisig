@@ -129,6 +129,23 @@ export class Contract {
     
   }
 
+  /**
+   * return fund amount
+   */
+  getFund(): string {
+    logging.log("getfund");
+    return this.fund.toString();
+  }
+
+  /**
+   * return the approval ifno
+   */
+  getApproval(): string {
+    logging.log("getApproval");
+    let approval:string | null = storage.getString(storageKey);
+    return (approval !== null) ? approval : "";
+  }
+
   // 2 owners
   private assert_owner(): void {
     const caller = Context.predecessor
