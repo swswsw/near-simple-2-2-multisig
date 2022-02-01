@@ -132,9 +132,9 @@ export class Contract {
   /**
    * return fund amount
    */
-  getFund(): string {
+  getFund(): u128 {
     logging.log("getfund");
-    return this.fund.toString();
+    return this.fund;
   }
 
   /**
