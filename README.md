@@ -44,8 +44,9 @@ Run the following in sequence:
 
 
 ## future works
-Attach UI
-
+structured datatype of storage (rather than delimited-strings)
+Better ui
+deploy new contract in ui
 May be generalized to m-of-n multisig later.
 
 
