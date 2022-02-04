@@ -14,12 +14,19 @@
     <button id="sign-in" class="signed-out" style="display: none">
         Sign in with NEAR!
     </button>
-    <button id="deposit" class="signed-in" style="display: none">
-        Deposit
-    </button>
-    <button id="withdraw" class="signed-in" style="display: none">
-        Withdraw
-    </button>
+    <div class="signed-in" style="display: none">
+      <input placeholder="amount (Near)"/>
+      <button id="deposit">
+          Deposit
+      </button>
+    </div>
+    <div class="signed-in" style="display: none">
+      <input placeholder="recipient"/>
+      <input placeholder="amount (Near)"/>
+      <button id="withdraw">
+          Withdraw
+      </button>
+    </div>
 
       <footer>
         <p class="signed-in" style="display: none">
